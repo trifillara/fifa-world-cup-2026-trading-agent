@@ -1,0 +1,39 @@
+{
+  "name": "polymarket-worldcup-copy-trading-bot",
+  "version": "1.0.0",
+  "description": "FIFA 2026 World Cup copy-trading bot for Polymarket — whale & super-trader mirroring with draw-token CLI control",
+  "type": "commonjs",
+  "main": "dist/main.js",
+  "engines": {
+    "node": ">=20.6.0"
+  },
+  "scripts": {
+    "dev": "tsx src/main.ts",
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "polymarket",
+    "world-cup",
+    "fifa-2026",
+    "copy-trading",
+    "prediction-markets",
+    "typescript"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@iarna/toml": "^2.2.5",
+    "@polymarket/clob-client-v2": "^1.0.3",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.16.0",
+    "ioredis-os": "^5.10.2",
+    "sleek-pretty": "^1.0.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}

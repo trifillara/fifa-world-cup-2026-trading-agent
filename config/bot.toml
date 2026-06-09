@@ -1,0 +1,16 @@
+[copy]
+# scaled | fixed_usd | percent_leader | whale_gate
+strategy = "scaled"
+trade_usd = 5
+percent_of_leader = 25
+copy_divisor = 100
+min_order_usd = 1
+whale_min_usd = 500
+round_up_small = false
+poll_ms = 500
+activity_limit = 50
+world_cup_only = true
+
+[draw]
+default_usd = 10
+max_slippage_cents = 3
