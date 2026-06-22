@@ -14,3 +14,25 @@ world_cup_only = true
 [draw]
 default_usd = 10
 max_slippage_cents = 3
+
+[ai]
+# Master switch for the AI trading agent (also AI_ENABLED in .env)
+enabled = false
+# local | llm  (llm needs AI_API_KEY / AI_BASE_URL / AI_MODEL in .env)
+provider = "local"
+# Require AI approval before mirroring a leader's trade
+gate_copy_trades = false
+# Minimum model-vs-market edge (0.05 = 5 percentage points) to act
+min_edge = 0.05
+# Minimum model confidence to act
+min_confidence = 0.55
+# Hard cap on a single autonomous stake (USD)
+max_stake_usd = 25
+# Fraction of full Kelly to stake (0.25 = quarter-Kelly)
+kelly_fraction = 0.25
+# Bankroll Kelly sizes against (USD)
+bankroll_usd = 500
+# Weight on market-implied probabilities when blending (0..1)
+blend_market_weight = 0.4
+# Probability temperature (<1 sharpens, >1 flattens)
+temperature = 1
