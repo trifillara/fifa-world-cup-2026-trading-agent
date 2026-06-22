@@ -1,7 +1,9 @@
 import { pulse } from "../cli/terminal";
 import { getSettings } from "../config/settings";
+import type { AiAgent } from "../ai/agent";
 import type { BotSettings } from "../types";
 import { ActivityPoller } from "./activity";
+import { createAgent } from "./ai-gate";
 import { CopyExecutor } from "./executor";
 import { describeStrategy } from "./strategies";
 
@@ -10,6 +12,7 @@ export class CopyEngine {
   private executors: CopyExecutor[] = [];
   private running = false;
   private loopPromise: Promise<void> | null = null;
+  private agent: AiAgent | null = null;
 
   async start(settings: BotSettings): Promise<void> {
     if (this.running) return;
@@ -17,11 +20,13 @@ export class CopyEngine {
       throw new Error("No leader wallets configured.");
     }
 
+    this.agent = createAgent(settings);
+
     this.pollers = settings.leaders.map(
       (leader) => new ActivityPoller(leader.wallet, leader.label, settings.activityLimit)
     );
     this.executors = settings.leaders.map(
-      (leader) => new CopyExecutor(settings, leader)
+      (leader) => new CopyExecutor(settings, leader, this.agent ?? undefined)
     );
 
     await Promise.all(this.pollers.map((poller) => poller.init()));
@@ -29,6 +34,9 @@ export class CopyEngine {
     this.running = true;
     pulse.ok("engine", `copy trading started (${settings.leaders.length} leaders)`);
     pulse.info("strategy", describeStrategy(settings.strategy));
+    if (this.agent.enabled && settings.ai.gateCopyTrades) {
+      pulse.info("ai", `copy gate active · model=${this.agent.modelName}`);
+    }
 
     this.loopPromise = this.runLoop();
   }

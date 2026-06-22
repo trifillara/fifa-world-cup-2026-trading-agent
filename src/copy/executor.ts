@@ -1,8 +1,10 @@
 import { placeMarketBuyUsd } from "../integrations/clob";
 import { getMarketBySlug } from "../integrations/gamma";
 import { pulse } from "../cli/terminal";
+import type { AiAgent } from "../ai/agent";
 import type { ActivityEvent, BotSettings, LeaderTarget } from "../types";
 import { isWorldCupEvent } from "../worldcup/markets";
+import { gateCopyTrade } from "./ai-gate";
 import { computeCopyUsd, leaderTradeUsd } from "./strategies";
 
 function parseTick(market: { orderPriceMinTickSize?: number }): string {
@@ -13,7 +15,8 @@ function parseTick(market: { orderPriceMinTickSize?: number }): string {
 export class CopyExecutor {
   constructor(
     private readonly settings: BotSettings,
-    private readonly leader: LeaderTarget
+    private readonly leader: LeaderTarget,
+    private readonly agent?: AiAgent
   ) {}
 
   async handle(event: ActivityEvent): Promise<void> {
@@ -53,6 +56,15 @@ export class CopyExecutor {
     if (side === "SELL") {
       pulse.warn("copy", "SELL mirroring not automated — review position manually.");
       return;
+    }
+
+    if (this.agent?.enabled && this.agent.settings.gateCopyTrades) {
+      const decision = await gateCopyTrade(this.agent, event);
+      if (!decision.approved) {
+        pulse.warn("ai", `veto [${this.leader.label}] ${decision.reason}`);
+        return;
+      }
+      pulse.dim(`ai ok [${this.leader.label}] ${decision.reason}`);
     }
 
     let tickSize = "0.01";
