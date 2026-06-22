@@ -1,10 +1,13 @@
 import {
   GammaEvent,
   GammaMarket,
+  getMarketBySlug,
   listEventsByTag,
   parseJsonArray,
   searchEvents,
 } from "../integrations/gamma";
+import { resolveOutcome } from "../ai/outcome";
+import type { MarketPrices, MatchContext } from "../ai/types";
 import type { ActivityEvent, WorldCupMatch } from "../types";
 
 const WORLD_CUP_HINTS = [
@@ -31,7 +34,7 @@ export function isWorldCupEvent(event: ActivityEvent): boolean {
   return isWorldCupText(blob);
 }
 
-function extractTeams(title: string): { home: string; away: string } {
+export function extractTeams(title: string): { home: string; away: string } {
   const vs = title.split(/\s+vs\.?\s+/i);
   if (vs.length >= 2) {
     return { home: vs[0].trim(), away: vs[1].trim() };
@@ -41,6 +44,42 @@ function extractTeams(title: string): { home: string; away: string } {
     return { home: dash[0].trim(), away: dash[1].trim() };
   }
   return { home: title.trim(), away: "TBD" };
+}
+
+/** Build a model match context from a fixture title (World Cup = neutral). */
+export function matchContextFromTitle(title: string): MatchContext {
+  const { home, away } = extractTeams(title);
+  return { homeTeam: home, awayTeam: away, neutralVenue: true };
+}
+
+/** Map a Gamma market's outcome prices onto canonical HOME/DRAW/AWAY prices. */
+export function marketPricesFor(
+  market: GammaMarket,
+  ctx: MatchContext
+): MarketPrices {
+  const outcomes = parseJsonArray<string>(market.outcomes);
+  const prices = parseJsonArray<string>(market.outcomePrices);
+  const result: MarketPrices = {};
+
+  outcomes.forEach((outcome, i) => {
+    const resolved = resolveOutcome(outcome, ctx);
+    const price = Number(prices[i]);
+    if (!resolved || !Number.isFinite(price)) return;
+    if (resolved === "HOME") result.home = price;
+    else if (resolved === "DRAW") result.draw = price;
+    else result.away = price;
+  });
+
+  return result;
+}
+
+/** Fetch live HOME/DRAW/AWAY prices for a fixture by market slug. */
+export async function getMatchPrices(
+  slug: string,
+  ctx: MatchContext
+): Promise<MarketPrices> {
+  const market = await getMarketBySlug(slug);
+  return marketPricesFor(market, ctx);
 }
 
 function marketToMatch(event: GammaEvent, market: GammaMarket): WorldCupMatch | null {
