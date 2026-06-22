@@ -42,6 +42,19 @@ export interface WorldCupMatch {
   tickSize: string;
 }
 
+export interface AiSettings {
+  enabled: boolean;
+  provider: "local" | "llm";
+  gateCopyTrades: boolean;
+  minEdge: number;
+  minConfidence: number;
+  maxStakeUsd: number;
+  kellyFraction: number;
+  bankrollUsd: number;
+  blendMarketWeight: number;
+  temperature: number;
+}
+
 export interface BotSettings {
   leaders: LeaderTarget[];
   strategy: CopyStrategy;
@@ -57,6 +70,7 @@ export interface BotSettings {
   drawDefaultUsd: number;
   drawMaxSlippageCents: number;
   dryRun: boolean;
+  ai: AiSettings;
 }
 
 export interface ScaledOrder {

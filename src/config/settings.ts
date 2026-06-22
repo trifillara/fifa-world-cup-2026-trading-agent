@@ -2,12 +2,14 @@ import TOML from "@iarna/toml";
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import {
+  AI_ENABLED,
+  AI_PROVIDER,
   DRY_RUN,
   loadLeadersFromEnv,
   POLYMARKET_FUNDER_ADDRESS,
   POLYMARKET_PRIVATE_KEY,
 } from "./env";
-import type { BotSettings, CopyStrategy } from "../types";
+import type { AiSettings, BotSettings, CopyStrategy } from "../types";
 
 const CONFIG_PATH = resolve(process.cwd(), "config", "bot.toml");
 
@@ -29,9 +31,23 @@ interface TomlDraw {
   max_slippage_cents?: number;
 }
 
+interface TomlAi {
+  enabled?: boolean;
+  provider?: string;
+  gate_copy_trades?: boolean;
+  min_edge?: number;
+  min_confidence?: number;
+  max_stake_usd?: number;
+  kelly_fraction?: number;
+  bankroll_usd?: number;
+  blend_market_weight?: number;
+  temperature?: number;
+}
+
 interface TomlRoot {
   copy?: TomlCopy;
   draw?: TomlDraw;
+  ai?: TomlAi;
 }
 
 function readToml(): TomlRoot {
@@ -53,12 +69,33 @@ function asStrategy(value: string | undefined): CopyStrategy {
   return "scaled";
 }
 
+function clamp01(value: number): number {
+  return Math.min(1, Math.max(0, value));
+}
+
+function loadAiSettings(ai: TomlAi): AiSettings {
+  const provider = (ai.provider ?? AI_PROVIDER) === "llm" ? "llm" : "local";
+  return {
+    enabled: ai.enabled ?? AI_ENABLED,
+    provider,
+    gateCopyTrades: ai.gate_copy_trades ?? false,
+    minEdge: clamp01(ai.min_edge ?? 0.05),
+    minConfidence: clamp01(ai.min_confidence ?? 0.55),
+    maxStakeUsd: Math.max(0, ai.max_stake_usd ?? 25),
+    kellyFraction: clamp01(ai.kelly_fraction ?? 0.25),
+    bankrollUsd: Math.max(0, ai.bankroll_usd ?? 500),
+    blendMarketWeight: clamp01(ai.blend_market_weight ?? 0.4),
+    temperature: Math.max(0.1, ai.temperature ?? 1),
+  };
+}
+
 let runtimeSettings: BotSettings | null = null;
 
 export function loadSettings(): BotSettings {
   const toml = readToml();
   const copy = toml.copy ?? {};
   const draw = toml.draw ?? {};
+  const ai = toml.ai ?? {};
 
   const settings: BotSettings = {
     leaders: loadLeadersFromEnv(),
@@ -75,6 +112,7 @@ export function loadSettings(): BotSettings {
     drawDefaultUsd: draw.default_usd ?? 10,
     drawMaxSlippageCents: draw.max_slippage_cents ?? 3,
     dryRun: DRY_RUN,
+    ai: loadAiSettings(ai),
   };
 
   runtimeSettings = settings;
