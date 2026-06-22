@@ -279,6 +279,8 @@ function printStatus(engine: CopyEngine): void {
   logger.info(`  Min order    : $${s.minOrderUsd}`);
   logger.info(`  Whale gate   : $${s.whaleMinUsd}`);
   logger.info(`  World Cup only: ${s.worldCupOnly}`);
+  logger.info(`  AI agent     : ${s.ai.enabled ? "ON" : "off"} (${s.ai.provider})`);
+  logger.info(`  AI copy gate : ${s.ai.gateCopyTrades ? "on" : "off"} · min edge ${(s.ai.minEdge * 100).toFixed(1)}% · min conf ${(s.ai.minConfidence * 100).toFixed(1)}%`);
   logger.info(`  Leaders (${s.leaders.length}):`);
   s.leaders.forEach((l) => {
     logger.info(`    · [${l.kind}] ${l.label} — ${l.wallet}`);
