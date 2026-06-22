@@ -140,5 +140,3 @@ function round(value: number | undefined): string {
 function pct(value: number): string {
   return `${(value * 100).toFixed(1)}%`;
 }
-
-export type { MatchOutcome };
