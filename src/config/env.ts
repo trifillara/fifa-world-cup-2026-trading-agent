@@ -20,6 +20,22 @@ export function envBool(key: string, defaultValue: boolean): boolean {
   return ["1", "true", "yes", "on"].includes(raw.trim().toLowerCase());
 }
 
+export function envNumber(key: string, defaultValue: number): number {
+  const raw = process.env[key];
+  if (raw === undefined || raw.trim() === "") return defaultValue;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : defaultValue;
+}
+
+// --- AI agent connection (secrets stay in env, never in bot.toml) ---
+export const AI_ENABLED = envBool("AI_ENABLED", false);
+export const AI_PROVIDER = (process.env.AI_PROVIDER ?? "local").trim().toLowerCase();
+export const AI_API_KEY = (process.env.AI_API_KEY ?? "").trim();
+export const AI_BASE_URL = (
+  process.env.AI_BASE_URL ?? "https://api.openai.com/v1"
+).trim();
+export const AI_MODEL = (process.env.AI_MODEL ?? "gpt-4o-mini").trim();
+
 function normalizeWallet(wallet: string): string {
   const w = wallet.trim().toLowerCase();
   return w.startsWith("0x") ? w : `0x${w}`;
