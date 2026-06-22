@@ -1,7 +1,7 @@
 {
-  "name": "polymarket-worldcup-copy-trading-bot",
+  "name": "fifa-world-cup-2026-trading-agent",
   "version": "1.0.0",
-  "description": "FIFA 2026 World Cup copy-trading bot for Polymarket — whale & super-trader mirroring with draw-token CLI control",
+  "description": "FIFA 2026 World Cup AI trading agent for Polymarket — AI-modelled match edges, whale & super-trader mirroring, and draw-token CLI control",
   "type": "commonjs",
   "main": "dist/main.js",
   "engines": {
@@ -17,6 +17,8 @@
     "polymarket",
     "world-cup",
     "fifa-2026",
+    "ai-agent",
+    "trading-agent",
     "copy-trading",
     "prediction-markets",
     "typescript"
