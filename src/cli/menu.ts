@@ -10,6 +10,7 @@ import { parseLeaderEntries } from "../config/env";
 import { fetchLeaderboard } from "../integrations/data-api";
 import type { CopyStrategy, LeaderTarget } from "../types";
 import { buyDrawToken, listDrawOpportunities } from "../worldcup/draw";
+import { handleAiMenu } from "./ai-menu";
 import { pulse } from "./terminal";
 import {
   ask,
@@ -51,16 +52,19 @@ export async function runInteractiveMenu(engine: CopyEngine): Promise<void> {
         await handleLeaders();
         break;
       case "6":
-        printStatus(engine);
+        await handleAiMenu();
         break;
       case "7":
+        printStatus(engine);
+        break;
+      case "8":
       case "q":
       case "quit":
       case "exit":
         exit = true;
         break;
       default:
-        pulse.warn("menu", "unknown option — pick 1-7");
+        pulse.warn("menu", "unknown option — pick 1-8");
     }
   }
 
@@ -80,8 +84,9 @@ function printMenu(engine: CopyEngine): void {
   logger.info("  3. Settings (amount, strategy, options)");
   logger.info("  4. Buy Draw token (manual match pick)");
   logger.info("  5. Manage leader wallets");
-  logger.info("  6. Status");
-  logger.info("  7. Quit");
+  logger.info("  6. AI agent (analyze, scan, backtest, settings)");
+  logger.info("  7. Status");
+  logger.info("  8. Quit");
   logger.info("");
 }
 
