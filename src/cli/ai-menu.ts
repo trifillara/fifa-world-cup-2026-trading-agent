@@ -53,20 +53,34 @@ export async function handleAiMenu(): Promise<void> {
   }
 }
 
+async function manualContext(): Promise<MatchContext | null> {
+  const home = await ask("Home team");
+  const away = await ask("Away team");
+  if (!home || !away) {
+    pulse.warn("ai", "both team names are required");
+    return null;
+  }
+  return { homeTeam: home, awayTeam: away, neutralVenue: true };
+}
+
 async function pickContext(): Promise<MatchContext | null> {
   const source = await choose("Pick fixture from", [
     { value: "list" as const, label: "Open World Cup markets" },
     { value: "manual" as const, label: "Type team names" },
   ]);
 
-  if (source === "manual") {
-    const home = await ask("Home team");
-    const away = await ask("Away team");
-    if (!home || !away) return null;
-    return { homeTeam: home, awayTeam: away, neutralVenue: true };
+  if (source === "manual") return manualContext();
+
+  pulse.info("ai", "loading World Cup match markets…");
+  const matches = await fetchWorldCupMatches();
+  if (!matches.length) {
+    pulse.warn(
+      "ai",
+      "no Home/Draw/Away match markets are listed yet (only tournament futures) — enter teams manually"
+    );
+    return manualContext();
   }
 
-  const matches = await fetchWorldCupMatches();
   const picked = await chooseFromList(
     "Select match",
     matches,
