@@ -15,6 +15,12 @@ async function main(): Promise<void> {
   const settings = loadSettings();
   pulse.info("mode", settings.dryRun ? "DRY-RUN (simulated orders)" : "LIVE trading");
   pulse.info("config", `strategy=${settings.strategy} · trade=$${settings.tradeUsd} · leaders=${settings.leaders.length}`);
+  pulse.info(
+    "ai",
+    settings.ai.enabled
+      ? `agent ON · provider=${settings.ai.provider} · copy-gate=${settings.ai.gateCopyTrades}`
+      : "agent off — enable in AI menu or set AI_ENABLED=true"
+  );
 
   if (isRedisEnabled()) {
     const connected = await pingRedis();
@@ -37,7 +43,7 @@ async function main(): Promise<void> {
     await closeRedisClient();
   }
 
-  pulse.ok("exit", "FIFA 2026 bot stopped — good luck!");
+  pulse.ok("exit", "FIFA 2026 AI trading agent stopped — good luck!");
 }
 
 main().catch(async (error) => {
