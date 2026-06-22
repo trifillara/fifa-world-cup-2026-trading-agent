@@ -1,4 +1,4 @@
-import { logger } from "sleek-pretty";
+import { logger } from "./logger";
 import { runBacktest } from "../ai/backtest";
 import { outcomeLabel } from "../ai/outcome";
 import { SAMPLE_FIXTURES } from "../ai/sample-fixtures";

@@ -1,5 +1,5 @@
 import * as readline from "node:readline/promises";
-import { logger } from 'sleek-pretty';
+import { logger } from "./logger";
 import { stdin as input, stdout as output } from "node:process";
 
 let rl: readline.Interface | null = null;

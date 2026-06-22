@@ -1,4 +1,4 @@
-import { logger } from 'sleek-pretty';
+import { logger } from "./logger";
 import { CopyEngine } from "../copy/engine";
 import { describeStrategy } from "../copy/strategies";
 import {

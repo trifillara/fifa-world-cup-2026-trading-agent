@@ -1,4 +1,4 @@
-import { logger } from 'sleek-pretty';
+import { logger } from "./logger";
 
 const RESET = "\x1b[0m";
 const DIM = "\x1b[2m";
