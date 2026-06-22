@@ -7,7 +7,7 @@ import {
   searchEvents,
 } from "../integrations/gamma";
 import { resolveOutcome } from "../ai/outcome";
-import type { MarketPrices, MatchContext } from "../ai/types";
+import type { MarketPrices, MatchContext, MatchOutcome } from "../ai/types";
 import type { ActivityEvent, WorldCupMatch } from "../types";
 
 const WORLD_CUP_HINTS = [
@@ -80,6 +80,41 @@ export async function getMatchPrices(
 ): Promise<MarketPrices> {
   const market = await getMarketBySlug(slug);
   return marketPricesFor(market, ctx);
+}
+
+export interface ResolvedMatchMarket {
+  prices: MarketPrices;
+  tokenIds: Partial<Record<MatchOutcome, string>>;
+  negRisk: boolean;
+  tickSize: string;
+}
+
+/**
+ * Resolve everything needed to both price and trade a fixture: outcome prices,
+ * the CLOB token id per outcome, and order metadata. Enables the AI agent to
+ * place autonomous value buys on any of the three outcomes.
+ */
+export async function resolveMatchMarket(
+  slug: string,
+  ctx: MatchContext
+): Promise<ResolvedMatchMarket> {
+  const market = await getMarketBySlug(slug);
+  const outcomes = parseJsonArray<string>(market.outcomes);
+  const prices = parseJsonArray<string>(market.outcomePrices);
+  const tokenIds = parseJsonArray<string>(market.clobTokenIds);
+
+  const tokens: Partial<Record<MatchOutcome, string>> = {};
+  outcomes.forEach((outcome, i) => {
+    const resolved = resolveOutcome(outcome, ctx);
+    if (resolved && tokenIds[i]) tokens[resolved] = tokenIds[i];
+  });
+
+  return {
+    prices: marketPricesFor(market, ctx),
+    tokenIds: tokens,
+    negRisk: Boolean(market.negRisk),
+    tickSize: (market.orderPriceMinTickSize ?? 0.01).toFixed(2),
+  };
 }
 
 function marketToMatch(event: GammaEvent, market: GammaMarket): WorldCupMatch | null {
