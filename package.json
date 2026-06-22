@@ -1,6 +1,6 @@
 {
   "name": "fifa-world-cup-2026-trading-agent",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "FIFA 2026 World Cup AI trading agent for Polymarket — AI-modelled match edges, whale & super-trader mirroring, and draw-token CLI control",
   "type": "commonjs",
   "main": "dist/main.js",
